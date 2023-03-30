@@ -16,7 +16,8 @@ data_files.append((os.path.join('share', package_name), glob('launch/*.py')))
 data_files.append(('share/' + package_name + '/protos', glob('protos/*.proto')))
 data_files.append(('share/' + package_name + '/protos', glob('protos/*.stl')))
 data_files.append(('share/' + package_name + '/worlds', glob('worlds/*')))
-
+#params
+data_files.append(('share/' + package_name + '/params', glob('params/*')))
 setup(
     name=package_name,
     version='0.0.0',

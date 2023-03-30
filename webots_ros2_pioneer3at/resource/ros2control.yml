@@ -9,8 +9,8 @@ diffdrive_controller:
   ros__parameters:
     left_wheel_names: ["front left wheel", "back left wheel"]
     right_wheel_names: ["front right wheel", "back right wheel"]
-    wheel_separation: 0.381
-    wheel_radius: 0.222
+    wheel_separation: 0.4
+    wheel_radius: 0.11
     wheels_per_side: 1
     enable_odom_tf: true
     use_stamped_vel: false

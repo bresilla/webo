@@ -13,7 +13,7 @@ WorldInfo {
   ]
   title "Pioneer 3AT"
   gpsCoordinateSystem "WGS84"
-  gpsReference 5.55567 52.544 0
+  gpsReference 51.9877 5.66295 0
   lineScale 0.5
 }
 Viewpoint {
