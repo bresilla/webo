@@ -57,17 +57,32 @@ Plant {
   missing 2
 }
 Pioneer3at {
-  hidden position_0_0 2.7638072086877703e-10
-  hidden position_0_1 2.764871493138965e-10
-  hidden position_0_2 -2.730580206389277e-10
-  hidden position_0_3 -2.729931836142896e-10
-  hidden rotation_1 0.5773516023062019 -0.5773476023089593 -0.5773516029444767 2.0944049993617284
-  hidden rotation_2 0.5773516023061198 -0.5773476023088772 -0.577351602944641 2.0944049993614833
-  hidden rotation_3 0.5773516027291642 -0.5773476027319144 -0.5773516020985624 2.0944050006305974
-  hidden rotation_4 0.5773516027291143 -0.5773476027318645 -0.5773516020986623 2.094405000630448
-  translation 3.412640612807105e-12 2.9790294038024856e-11 -0.002389975770718422
-  rotation -0.01491448204173852 0.9998887729269718 1.4679725291256897e-07 4.9173231882997536e-05
   name "Pioneer3at"
   controller "<extern>"
   supervisor TRUE
+    extensionSlot [
+    Camera {
+      translation 0.115 0 0.735071
+      rotation 0 -1 0 -1.0472053071795866
+      name "camera_front"
+      width 1280
+      height 720
+    }
+    Camera {
+      translation -0.175 3.99604e-07 0.735067
+      rotation 0.5000001748437495 -6.072562123498319e-07 -0.8660253028381163 -3.1415853071795863
+      name "camera_back"
+      width 1280
+      height 720
+    }
+    InertialUnit {
+      translation 0 0 0.3
+    }
+    Lidar {
+      translation 0 0 0.3
+    }
+    GPS {
+      translation 0 0 0.3
+    }
+  ]
 }
