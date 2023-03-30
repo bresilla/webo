@@ -1,0 +1,73 @@
+#VRML_SIM R2023a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/appearances/protos/SandyGround.proto"
+EXTERNPROTO "../protos/Plant.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/robots/adept/pioneer3/protos/Pioneer3at.proto"
+
+WorldInfo {
+  info [
+    "Pioneer 3AT robot (Adept MobileRobots)."
+  ]
+  title "Pioneer 3AT"
+  gpsCoordinateSystem "WGS84"
+  gpsReference 5.55567 52.544 0
+  lineScale 0.5
+}
+Viewpoint {
+  orientation -0.038173965783754406 -0.9987487496690698 0.032306088757542 5.808214666989932
+  position -4.139642076271635 0.26185998696249485 3.0917305311511765
+  followSmoothness 0
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 60 60
+  floorTileSize 3 3
+  floorAppearance SandyGround {
+    colorOverride 0.792157 0.792157 0.552941
+  }
+  wallThickness 0.2
+  wallHeight 0.8
+  wallAppearance PBRAppearance {
+    baseColorMap ImageTexture {
+      url [
+        "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/default/worlds/textures/gray_brick_wall.jpg"
+      ]
+    }
+    roughness 1
+    metalness 0
+    textureTransform TextureTransform {
+      scale 56 28
+    }
+  }
+}
+Plant {
+  translation 0 -0.23 0
+  color 0.101961 0.407843 0.0784314
+  nRows 100
+  nCols 6
+  nScale 1.1
+  vertical FALSE
+  uniformity 4
+  missing 2
+}
+Pioneer3at {
+  hidden position_0_0 2.7638072086877703e-10
+  hidden position_0_1 2.764871493138965e-10
+  hidden position_0_2 -2.730580206389277e-10
+  hidden position_0_3 -2.729931836142896e-10
+  hidden rotation_1 0.5773516023062019 -0.5773476023089593 -0.5773516029444767 2.0944049993617284
+  hidden rotation_2 0.5773516023061198 -0.5773476023088772 -0.577351602944641 2.0944049993614833
+  hidden rotation_3 0.5773516027291642 -0.5773476027319144 -0.5773516020985624 2.0944050006305974
+  hidden rotation_4 0.5773516027291143 -0.5773476027318645 -0.5773516020986623 2.094405000630448
+  translation 3.412640612807105e-12 2.9790294038024856e-11 -0.002389975770718422
+  rotation -0.01491448204173852 0.9998887729269718 1.4679725291256897e-07 4.9173231882997536e-05
+  name "Pioneer3at"
+  controller "<extern>"
+  supervisor TRUE
+}
