@@ -15,6 +15,12 @@
             <gyroName>gyro</gyroName>
             <accelerometerName>accelerometer</accelerometerName>
         </plugin>
+        <device reference="gps" type="GPS">
+            <ros>
+                <enabled>False</enabled>
+                <topicName>/gps</topicName>
+            </ros>
+        </device>
     </webots>
     <ros2_control name="WebotsControl" type="system">
         <hardware>
