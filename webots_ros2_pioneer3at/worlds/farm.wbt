@@ -60,7 +60,7 @@ Pioneer3at {
   name "Pioneer3at"
   controller "<extern>"
   supervisor TRUE
-    extensionSlot [
+  extensionSlot [
     Camera {
       translation 0.115 0 0.735071
       rotation 0 -1 0 -1.0472053071795866
@@ -77,6 +77,11 @@ Pioneer3at {
     }
     InertialUnit {
       translation 0 0 0.3
+      name "imu"
+    }
+    Gyro {
+    }
+    Accelerometer {
     }
     Lidar {
       translation 0 0 0.3

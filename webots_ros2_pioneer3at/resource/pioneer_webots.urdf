@@ -1,8 +1,20 @@
 <?xml version="1.0" ?>
 <robot name="Pioneer3at">
     <webots>
-        <!-- <plugin type="webots_ros2_pioneer3at.plugin_example.PluginExample" /> -->
         <plugin type="webots_ros2_control::Ros2Control" />
+        <!-- <plugin type="webots_ros2_pioneer3at.plugin_example.PluginExample">
+            <enabled>true</enabled>
+        </plugin> -->
+        <plugin type="webots_ros2_driver::Ros2IMU">
+            <enabled>true</enabled>
+            <updateRate>20</updateRate>
+            <topicName>/imu/data</topicName>
+            <alwaysOn>false</alwaysOn>
+            <frameName>imu_link</frameName>
+            <inertialUnitName>imu</inertialUnitName>
+            <gyroName>gyro</gyroName>
+            <accelerometerName>accelerometer</accelerometerName>
+        </plugin>
     </webots>
     <ros2_control name="WebotsControl" type="system">
         <hardware>
