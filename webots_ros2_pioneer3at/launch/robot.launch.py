@@ -12,7 +12,7 @@ from webots_ros2_driver.webots_launcher import WebotsLauncher
 from webots_ros2_driver.utils import controller_url_prefix
 
 def get_ros2_nodes(*args):
-    package_dir = get_package_share_directory('webo')
+    package_dir = get_package_share_directory('webots_ros2_pioneer3at')
     robot_description = pathlib.Path(os.path.join(package_dir, 'resource', 'pioneer_webots.urdf')).read_text()
     ros2_control_params = os.path.join(package_dir, 'resource', 'ros2control.yml')
     use_sim_time = LaunchConfiguration('use_sim_time', default=True)
@@ -89,7 +89,7 @@ def get_ros2_nodes(*args):
 
 
 def generate_launch_description():
-    package_dir = get_package_share_directory('webo')
+    package_dir = get_package_share_directory('webots_ros2_pioneer3at')
     world = LaunchConfiguration('world')
 
     webots = WebotsLauncher(
@@ -109,7 +109,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             'world',
-            default_value='r4c.wbt',
+            default_value='farm.wbt',
             description='Choose one of the world files from `/world` directory'
         ),
         webots,

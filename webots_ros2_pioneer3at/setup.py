@@ -2,7 +2,7 @@ from glob import glob
 from setuptools import setup
 import os
 
-package_name = 'webo'
+package_name = 'webots_ros2_pioneer3at'
 
 data_files = []
 #resources
@@ -17,7 +17,6 @@ data_files.append(('share/' + package_name + '/protos', glob('protos/*.proto')))
 data_files.append(('share/' + package_name + '/protos', glob('protos/*.stl')))
 data_files.append(('share/' + package_name + '/worlds', glob('worlds/*')))
 
-
 setup(
     name=package_name,
     version='0.0.0',
@@ -27,12 +26,12 @@ setup(
     zip_safe=True,
     maintainer='bresilla',
     maintainer_email='trim.bresilla@gmail.com',
-    escription='TODO: Package description',
+    description='TODO: Package description',
     license='TODO: License declaration',
-    ests_require=['pytest'],
+    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'webo_driver = webo.webo_driver:main',
+            'webots_ros2_pioneer3at = webots_ros2_pioneer3at.webots_ros2_pioneer3at:main'
         ],
         'launch.frontend.launch_extension': [
             'launch_ros = launch_ros'
