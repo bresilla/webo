@@ -18,7 +18,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.038173965783754406 -0.9987487496690698 0.032306088757542 5.808214666989932
-  position -4.139642076271635 0.26185998696249485 3.0917305311511765
+  position -4.549925309352423 0.2667280462332508 3.302473288369167
   followSmoothness 0
 }
 TexturedBackground {
@@ -61,6 +61,8 @@ Pioneer3at {
   controller "<extern>"
   supervisor TRUE
   extensionSlot [
+    Compass {
+    }
     Camera {
       translation 0.115 0 0.735071
       rotation 0 -1 0 -1.0472053071795866

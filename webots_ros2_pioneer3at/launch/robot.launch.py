@@ -79,12 +79,20 @@ def get_ros2_nodes(*args):
         arguments=['0', '0', '0', '0', '0', '0', 'base_link', 'base_footprint'],
     )
 
+    imu_publisher = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        output='screen',
+        arguments=['0', '0', '0', '0', '0', '0', 'base_link', 'imu_link'],
+    )
+
     return [
         joint_state_broadcaster_spawner,
         diffdrive_controller_spawner,
         robot_state_publisher,
         robot_driver,
         footprint_publisher,
+        imu_publisher,
     ]
 
 

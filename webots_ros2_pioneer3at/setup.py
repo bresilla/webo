@@ -32,7 +32,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'webots_ros2_pioneer3at = webots_ros2_pioneer3at.webots_ros2_pioneer3at:main'
+            'webots_ros2_pioneer3at = webots_ros2_pioneer3at.webots_ros2_pioneer3at:main',
+            'plugin_example = webots_ros2_pioneer3at.plugin_example:PluginExample',
         ],
         'launch.frontend.launch_extension': [
             'launch_ros = launch_ros'

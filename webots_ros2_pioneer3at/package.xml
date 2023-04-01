@@ -3,22 +3,21 @@
 <package format="3">
   <name>webots_ros2_pioneer3at</name>
   <version>0.0.1</version>
-  <description>TODO: Package description</description>
+  <description>Pioneer-3AT Burger robot ROS2 interface for Webots</description>
   <maintainer email="trim.bresilla@gmail.com">bresilla</maintainer>
-  <license>TODO: License declaration</license>
-
-  <depend>rclpy</depend>
-  <depend>webots_ros2_driver</depend>
-  <depend>webots_ros2_control</depend>
-  <depend>robot_localization</depend>
-
+  <license>Apache License 2.0</license>
+  
+  <exec_depend>rclpy</exec_depend>
   <exec_depend>builtin_interfaces</exec_depend>
+  <exec_depend>webots_ros2_driver</exec_depend>
+  <exec_depend>webots_ros2_control</exec_depend>
   <exec_depend>diff_drive_controller</exec_depend>
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
   <exec_depend>rviz2</exec_depend>
+  <exec_depend>robot_localization</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
