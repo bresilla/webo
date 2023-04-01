@@ -1,0 +1,3 @@
+[submodule "handy_msgs"]
+	path = handy_msgs
+	url = git@github.com:bresilla/handy_msgs.git

@@ -3,6 +3,10 @@ from setuptools import setup
 import os
 
 package_name = 'webots_ros2_pioneer3at'
+canbus = "webots_ros2_pioneer3at/canbus"
+path_server = "webots_ros2_pioneer3at/path_server"
+weeding = "webots_ros2_pioneer3at/weeding"
+
 
 data_files = []
 #resources
@@ -21,7 +25,7 @@ data_files.append(('share/' + package_name + '/params', glob('params/*')))
 setup(
     name=package_name,
     version='0.0.0',
-    packages=[package_name],
+    packages=[package_name, canbus, path_server, weeding],
     data_files=data_files,
     install_requires=['setuptools'],
     zip_safe=True,
@@ -33,8 +37,10 @@ setup(
     entry_points={
         'console_scripts': [
             'webots_ros2_pioneer3at = webots_ros2_pioneer3at.webots_ros2_pioneer3at:main',
-            'plugin_example = webots_ros2_pioneer3at.plugin_example:PluginExample',
             'topic_remapper = webots_ros2_pioneer3at.topic_remapper:main',
+            'navfix_can = webots_ros2_pioneer3at.canbus.navfix_can:main',
+            'pathserver_utm = webots_ros2_pioneer3at.path_server.utm:main',
+            'weeding = webots_ros2_pioneer3at.weeding.detect_pixel:main',
         ],
         'launch.frontend.launch_extension': [
             'launch_ros = launch_ros'
