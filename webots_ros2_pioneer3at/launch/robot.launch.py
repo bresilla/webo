@@ -5,6 +5,8 @@ from launch.substitutions import LaunchConfiguration
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions.path_join_substitution import PathJoinSubstitution
 from launch import LaunchDescription
+from launch.substitutions import FindExecutable
+from launch.actions import ExecuteProcess
 from launch_ros.actions import Node
 import launch
 from ament_index_python.packages import get_package_share_directory
@@ -86,6 +88,23 @@ def get_ros2_nodes(*args):
         arguments=['0', '0', '0', '0', '0', '0', 'base_link', 'imu_link'],
     )
 
+    topic_remapper = Node(
+        package='webots_ros2_pioneer3at',
+        executable='topic_remapper',
+        name='topic_remapper',
+        output='screen',
+    )
+
+    reset_distance = ExecuteProcess(
+        cmd=[[
+            FindExecutable(name='ros2'),
+            " service call ",
+            "/gps/reset_distance ",
+            "example_interfaces/srv/Trigger ",
+        ]],
+        shell=True
+    )
+
     return [
         joint_state_broadcaster_spawner,
         diffdrive_controller_spawner,
@@ -93,6 +112,8 @@ def get_ros2_nodes(*args):
         robot_driver,
         footprint_publisher,
         imu_publisher,
+        topic_remapper,
+        reset_distance,
     ]
 
 

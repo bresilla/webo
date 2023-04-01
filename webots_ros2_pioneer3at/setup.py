@@ -34,6 +34,7 @@ setup(
         'console_scripts': [
             'webots_ros2_pioneer3at = webots_ros2_pioneer3at.webots_ros2_pioneer3at:main',
             'plugin_example = webots_ros2_pioneer3at.plugin_example:PluginExample',
+            'topic_remapper = webots_ros2_pioneer3at.topic_remapper:main',
         ],
         'launch.frontend.launch_extension': [
             'launch_ros = launch_ros'

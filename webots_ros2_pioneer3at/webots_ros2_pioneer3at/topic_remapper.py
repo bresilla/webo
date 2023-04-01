@@ -3,7 +3,6 @@ import rclpy
 from sensor_msgs.msg import NavSatFix
 from std_msgs.msg import Float32
 from rclpy.node import Node
-from haversine import haversine
 from example_interfaces.srv import Trigger
 
 def distance(coord1, coord2):
@@ -19,7 +18,8 @@ def distance(coord1, coord2):
 
     """
     # Radius of the Earth in meters
-    radius_earth = 6371008
+    # radius_earth = 6_371_008
+    radius_earth = 6_367_449
     
     # Convert latitude and longitude to radians
     lat1, lon1 = map(math.radians, coord1)
@@ -37,10 +37,10 @@ def distance(coord1, coord2):
 class Remapper(Node):
     def __init__(self, args):
         super().__init__("gps_fix")
-        self.gps_sub = self.create_subscription(NavSatFix, '/gps/gps', self.gps_callback, 10)
+        self.gps_sub = self.create_subscription(NavSatFix, '/gps', self.gps_callback, 10)
         self.dist_pub = self.create_publisher(Float32, "/gps/distance", 10)
         self.gps_pub = self.create_publisher(NavSatFix, "/gps/fix", 10)
-        self.srv = self.create_service(Trigger, 'reset_distance', self.reset_distance)
+        self.srv = self.create_service(Trigger, '/gps/reset_distance', self.reset_distance)
         self.prev = None
         self.dist = 0
 
@@ -56,9 +56,8 @@ class Remapper(Node):
             delta = 0 if self.prev is None else distance((self.prev[0], self.prev[1]), (latitude, longitude))
             self.dist = float(self.dist + delta)
             self.prev = [latitude, longitude]
-            new_msg = Distance()
-            new_msg.header = msg.header
-            new_msg.distance = self.dist*1000
+            new_msg = Float32()
+            new_msg.data = self.dist
             self.dist_pub.publish(new_msg)
 
 def main(args=None):
