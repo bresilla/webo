@@ -44,6 +44,10 @@ setup(
             'navfix_can = webots_ros2_pioneer3at.canbus.navfix_can:main',
             'pathserver_utm = webots_ros2_pioneer3at.path_server.utm:main',
             'weeding = webots_ros2_pioneer3at.weeding.detect_pixel:main',
+            'weeding_blob = webots_ros2_pioneer3at.weeding.detect_blob:main',
+            'weeding_save = webots_ros2_pioneer3at.weeding.save_images:main',
+            'weeding_track = webots_ros2_pioneer3at.weeding.detect_blob_track:main',
+
         ],
         'launch.frontend.launch_extension': [
             'launch_ros = launch_ros'

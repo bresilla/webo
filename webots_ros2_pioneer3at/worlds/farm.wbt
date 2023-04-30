@@ -18,7 +18,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.038173965783754406 -0.9987487496690698 0.032306088757542 5.808214666989932
-  position -4.549925309352423 0.2667280462332508 3.302473288369167
+  position -6.205315337268659 0.2863694454481385 4.152767501307527
   followSmoothness 0
 }
 TexturedBackground {
@@ -51,7 +51,7 @@ Plant {
   color 0.101961 0.407843 0.0784314
   nRows 100
   nCols 6
-  nScale 1.1
+  nScale 0.8
   vertical FALSE
   uniformity 4
   missing 2

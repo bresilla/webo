@@ -16,6 +16,11 @@ class ImageSubscriber(Node):
         self.cv_bridge = CvBridge()
         self.offset = 1.07
 
+        self.object_dict_front = {}
+        self.object_count_front = 0
+        self.object_dict_back = {}
+        self.object_count_back = 0
+
         self.distance = message_filters.Subscriber(self, Float32Stamped, '/gps/distance')
         self.image_back = message_filters.Subscriber(self, Image, '/Pioneer3at/camera_back')
         self.image_front = message_filters.Subscriber(self, Image, '/Pioneer3at/camera_front')
@@ -38,7 +43,7 @@ class ImageSubscriber(Node):
         # print(gps.longitude)
         camera_front = []
         image = self.cv_bridge.imgmsg_to_cv2(img)
-        image, _ = self.blober(image, self.blobs_front_pub)
+        image, _ = self.blober(image, self.blobs_front_pub, self.object_dict_front, self.object_count_front)
         cv2.imshow("CAM_FRONT", image)
         cv2.waitKey(1)
 
@@ -48,15 +53,15 @@ class ImageSubscriber(Node):
         camera_back = []
         image = self.cv_bridge.imgmsg_to_cv2(img)
         image = cv2.flip(image, 1)
-        image, _ = self.blober(image, self.blobs_back_pub)
+        image, _ = self.blober(image, self.blobs_back_pub, self.object_dict_back, self.object_count_back)
         cv2.imshow("CAM_BACK", image)
         cv2.waitKey(1)
 
-    def blober(self, img, array):
-        y, x = int(img.shape[0]/2), 0
-        h, w = 150, img.shape[1]
-        roi = img[y:y+h, x:x+w]
-        img = roi
+    def blober(self, img, array, dict, count):
+        # y, x = int(img.shape[0]/2), 0
+        # h, w = 150, img.shape[1]
+        # roi = img[y:y+h, x:x+w]
+        # img = roi
 
         img = cv2.GaussianBlur(img, (9, 9), 0)
         hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -82,10 +87,24 @@ class ImageSubscriber(Node):
             if moments["m00"] != 0:
                 x = int(moments["m10"] / moments["m00"])
                 y = int(moments["m01"] / moments["m00"])
+                object_id = self.get_object_id(x, y, dict)
                 cv2.circle(seg_img, (x, y), 5, (0, 255, 0), -1)
-
+                if object_id is None:
+                    dict[count] = (x, y)
+                    count += 1
+                else:
+                    dict[object_id] = (x, y)
+                cv2.putText(seg_img, "Object {}".format(object_id), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+            cv2.putText(seg_img, "Object Count: {}".format(count), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
         output = cv2.drawContours(seg_img, large_contours, -1, (0, 0, 255), 3)
         return output, seg_img
+    
+    def get_object_id(self, centroid_x, centroid_y, object_dict):
+        for object_id, centroid in object_dict.items():
+            distance = np.sqrt((centroid_x - centroid[0])**2 + (centroid_y - centroid[1])**2)
+            if distance < 50:
+                return object_id
+        return None
 
 def main(args=None):
     rclpy.init(args=args)
