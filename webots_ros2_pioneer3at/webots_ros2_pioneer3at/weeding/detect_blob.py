@@ -78,11 +78,13 @@ class ImageSubscriber(Node):
         large_contours = [cnt for cnt in contours if cv2.contourArea(cnt) > min_area]
 
         for e in large_contours:
+            x, y, w, h = cv2.boundingRect(e)
+            cv2.rectangle(seg_img, (x, y), (x+w, y+h), (0, 255, 0), 2)
             moments = cv2.moments(e)
             if moments["m00"] != 0:
-                x = int(moments["m10"] / moments["m00"])
-                y = int(moments["m01"] / moments["m00"])
-                cv2.circle(seg_img, (x, y), 5, (0, 255, 0), -1)
+                xc = int(moments["m10"] / moments["m00"])
+                yc = int(moments["m01"] / moments["m00"])
+                cv2.circle(seg_img, (xc, yc), 5, (0, 255, 0), -1)
 
         output = cv2.drawContours(seg_img, large_contours, -1, (0, 0, 255), 3)
         return output, seg_img

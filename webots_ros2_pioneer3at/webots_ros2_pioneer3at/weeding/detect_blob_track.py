@@ -17,7 +17,7 @@ class ImageSubscriber(Node):
         self.offset = 1.07
 
         self.object_dict_front = {}
-        self.object_count_front = 0
+        self.object_count_front = 0 
         self.object_dict_back = {}
         self.object_count_back = 0
 
@@ -65,8 +65,8 @@ class ImageSubscriber(Node):
 
         img = cv2.GaussianBlur(img, (9, 9), 0)
         hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        bound_lower = np.array([30, 30, 0])
-        bound_upper = np.array([90, 255, 255])
+        bound_lower = np.array([50, 70, 0])
+        bound_upper = np.array([120, 255, 127])
 
         mask_green = cv2.inRange(hsv_img, bound_lower, bound_upper)
 
@@ -87,22 +87,22 @@ class ImageSubscriber(Node):
             if moments["m00"] != 0:
                 x = int(moments["m10"] / moments["m00"])
                 y = int(moments["m01"] / moments["m00"])
-                object_id = self.get_object_id(x, y, dict)
                 cv2.circle(seg_img, (x, y), 5, (0, 255, 0), -1)
+                object_id = self.tracker(x, y, dict)
                 if object_id is None:
                     dict[count] = (x, y)
                     count += 1
                 else:
                     dict[object_id] = (x, y)
-                cv2.putText(seg_img, "Object {}".format(object_id), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                    cv2.putText(seg_img, "Object {}".format(object_id), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
             cv2.putText(seg_img, "Object Count: {}".format(count), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
         output = cv2.drawContours(seg_img, large_contours, -1, (0, 0, 255), 3)
         return output, seg_img
     
-    def get_object_id(self, centroid_x, centroid_y, object_dict):
+    def tracker(self, centroid_x, centroid_y, object_dict):
         for object_id, centroid in object_dict.items():
             distance = np.sqrt((centroid_x - centroid[0])**2 + (centroid_y - centroid[1])**2)
-            if distance < 50:
+            if distance < 10:
                 return object_id
         return None
 

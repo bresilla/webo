@@ -19,28 +19,28 @@ def getBlobPositionInImage(color, lower_boud, upper_bound):
             y = int(moments["m01"] / moments["m00"])
     return color
 
-path = "/home/bresilla/sync/disk/PROJECTS/R4C/data/LSPN_CAM_2022/20220629/RGB-18443010C1A2DF0F00/image000797_09_22_43_045729.jpg"
+path = "/home/bresilla/webots/webo/images/front_camera_504.png"
 img = cv2.imread(path)
-hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-bound_lower = np.array([28, 17, 20])
-bound_upper = np.array([85, 255, 255])
+# hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+# bound_lower = np.array([28, 17, 20])
+# bound_upper = np.array([85, 255, 255])
 
-mask_green = cv2.inRange(hsv_img, bound_lower, bound_upper)
-kernel = np.ones((7,7),np.uint8)
+# mask_green = cv2.inRange(hsv_img, bound_lower, bound_upper)
+# kernel = np.ones((7,7),np.uint8)
 
-mask_green = cv2.morphologyEx(mask_green, cv2.MORPH_CLOSE, kernel)
-mask_green = cv2.morphologyEx(mask_green, cv2.MORPH_OPEN, kernel)
+# mask_green = cv2.morphologyEx(mask_green, cv2.MORPH_CLOSE, kernel)
+# mask_green = cv2.morphologyEx(mask_green, cv2.MORPH_OPEN, kernel)
 
-seg_img = cv2.bitwise_and(img, img, mask=mask_green)
-contours, hier = cv2.findContours(mask_green.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-output = cv2.drawContours(seg_img, contours, -1, (0, 0, 255), 3)
+# seg_img = cv2.bitwise_and(img, img, mask=mask_green)
+# contours, hier = cv2.findContours(mask_green.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+# output = cv2.drawContours(seg_img, contours, -1, (0, 0, 255), 3)
 
-cv2.imshow("opencv", output)
-while True:
-    key = cv2.waitKey(1)
-    if key == ord('q'):
-        break
-cv2.destroyAllWindows()
+# cv2.imshow("opencv", output)
+# while True:
+#     key = cv2.waitKey(1)
+#     if key == ord('q'):
+#         break
+# cv2.destroyAllWindows()
 
 
 def nothing(x):

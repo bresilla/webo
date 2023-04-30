@@ -47,7 +47,7 @@ setup(
             'weeding_blob = webots_ros2_pioneer3at.weeding.detect_blob:main',
             'weeding_save = webots_ros2_pioneer3at.weeding.save_images:main',
             'weeding_track = webots_ros2_pioneer3at.weeding.detect_blob_track:main',
-
+            'nofair = webots_ros2_pioneer3at.weeding.nofair_tracking:main',
         ],
         'launch.frontend.launch_extension': [
             'launch_ros = launch_ros'
