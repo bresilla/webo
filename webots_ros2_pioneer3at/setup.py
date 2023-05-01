@@ -6,6 +6,7 @@ package_name = 'webots_ros2_pioneer3at'
 canbus = "webots_ros2_pioneer3at/canbus"
 path_server = "webots_ros2_pioneer3at/path_server"
 weeding = "webots_ros2_pioneer3at/weeding"
+utils = "webots_ros2_pioneer3at/utils"
 
 
 data_files = []
@@ -43,11 +44,13 @@ setup(
             'topic_remapper = webots_ros2_pioneer3at.topic_remapper:main',
             'navfix_can = webots_ros2_pioneer3at.canbus.navfix_can:main',
             'pathserver_utm = webots_ros2_pioneer3at.path_server.utm:main',
-            'weeding = webots_ros2_pioneer3at.weeding.detect_pixel:main',
-            'weeding_blob = webots_ros2_pioneer3at.weeding.detect_blob:main',
-            'weeding_save = webots_ros2_pioneer3at.weeding.save_images:main',
-            'weeding_track = webots_ros2_pioneer3at.weeding.detect_blob_track:main',
-            'nofair = webots_ros2_pioneer3at.weeding.nofair_tracking:main',
+            'save_images = webots_ros2_pioneer3at.utils.save_images:main',
+            'detect_pixel = webots_ros2_pioneer3at.weeding.detect_pixel:main',
+            'detect_blob = webots_ros2_pioneer3at.weeding.detect_blob:main',
+            'detect_yolo = webots_ros2_pioneer3at.weeding.detect_yolo:main',
+            'tracking = webots_ros2_pioneer3at.weeding.nofair_tracking:main',
+            'nofair_tracking_blob = webots_ros2_pioneer3at.weeding.nofair_tracking_blob:main',
+
         ],
         'launch.frontend.launch_extension': [
             'launch_ros = launch_ros'

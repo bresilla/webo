@@ -75,27 +75,26 @@ class Tracktor(Node):
         self.tracker_front = Trackit("bbox")
         self.tracker_back = Trackit("bbox")
 
-
         self.image_front_pub = self.create_publisher(Image, '/Pioneer3at/camera_front/tracker', 10)
         self.image_back_pub = self.create_publisher(Image, '/Pioneer3at/camera_back/tracker', 10)
         
         self.distance = message_filters.Subscriber(self, Float32Stamped, '/gps/distance')
         self.image_front = message_filters.Subscriber(self, Image, '/Pioneer3at/camera_front')
+        self.tags_front = message_filters.Subscriber(self, Tags, '/Pioneer3at/camera_front/tags')
         self.image_back = message_filters.Subscriber(self, Image, '/Pioneer3at/camera_back')
+        self.tags_back = message_filters.Subscriber(self, Tags, '/Pioneer3at/camera_back/tags')
 
-        self.front_ts = message_filters.ApproximateTimeSynchronizer([self.image_front, self.distance], 10, slop=10)
+        self.front_ts = message_filters.ApproximateTimeSynchronizer([self.image_front, self.tags_front], 10, slop=10)
         self.front_ts.registerCallback(self.callback_front)
-        self.back_ts = message_filters.ApproximateTimeSynchronizer([self.image_back, self.distance], 10, slop=10)
+        self.back_ts = message_filters.ApproximateTimeSynchronizer([self.image_back, self.tags_back], 10, slop=10)
         self.back_ts.registerCallback(self.callback_back)
 
 
-    def callback_front(self, image, distance):
+    def callback_front(self, image, tags):
         frame = self.bridge.imgmsg_to_cv2(image, "bgr8")
-        img, tags = self.blober(frame)
-
         detections = self.tracker_front.gen_detections(tags)
         tracked_objects = self.tracker_front.update(detections=detections)
-        frame2 = self.tracker_front.pather.draw(frame.copy(), tracked_objects)
+        frame2 = self.tracker_front.pather.draw(frame, tracked_objects)
         frame = cv2.add(frame, frame2)
         self.tracker_front.draw(frame, tracked_objects)
 
@@ -103,10 +102,8 @@ class Tracktor(Node):
         self.image_front_pub.publish(labeled_frame)
 
 
-    def callback_back(self, image, distance):
+    def callback_back(self, image, tags):
         frame = self.bridge.imgmsg_to_cv2(image, "bgr8")
-        img, tags = self.blober(frame)
-
         detections = self.tracker_back.gen_detections(tags)
         tracked_objects = self.tracker_back.update(detections=detections)
         frame2 = self.tracker_back.pather.draw(frame, tracked_objects)
@@ -116,53 +113,6 @@ class Tracktor(Node):
         labeled_frame = self.bridge.cv2_to_imgmsg(frame, encoding='bgr8')
         self.image_back_pub.publish(labeled_frame)
         
-
-    def blober(self, img):
-        # y, x = int(img.shape[0]/2), 0
-        # h, w = 150, img.shape[1]
-        # roi = img[y:y+h, x:x+w]
-        # img = roi
-
-        img = cv2.GaussianBlur(img, (9, 9), 0)
-        hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        bound_lower = np.array([50, 70, 0])
-        bound_upper = np.array([120, 255, 127])
-
-        mask_green = cv2.inRange(hsv_img, bound_lower, bound_upper)
-
-        kernel = np.ones((7,7),np.uint8)
-        mask_green = cv2.morphologyEx(mask_green, cv2.MORPH_CLOSE, kernel)
-        mask_green = cv2.morphologyEx(mask_green, cv2.MORPH_OPEN, kernel)
-        mask_green = cv2.dilate(mask_green, kernel, iterations=1)
-        mask_green = cv2.erode(mask_green, kernel, iterations=1)
-
-        seg_img = cv2.bitwise_and(img, img, mask=mask_green)
-        contours, hier = cv2.findContours(mask_green.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        min_area = 1000
-        large_contours = [cnt for cnt in contours if cv2.contourArea(cnt) > min_area]
-
-        tags = Tags()
-        for e in large_contours:
-            tag = Tag()
-            tag.x, tag.y, tag.w, tag.h = cv2.boundingRect(e)
-            tag.l = "weed"
-            tag.d = 0
-            tag.p = 0.9
-            tags.data.append(tag)
-            cv2.rectangle(seg_img, (tag.x, tag.y), (tag.x+tag.w, tag.y+tag.h), (0, 255, 0), 2)
-
-            moments = cv2.moments(e)
-            if moments["m00"] != 0:
-                xc = int(moments["m10"] / moments["m00"])
-                yc = int(moments["m01"] / moments["m00"])
-                cv2.circle(seg_img, (xc, yc), 5, (0, 255, 0), -1)
-        tags.header.stamp = self.get_clock().now().to_msg()
-        tags.header.frame_id = "tags"
-
-        output = cv2.drawContours(seg_img, large_contours, -1, (0, 0, 255), 3)
-        return output, tags
-
 
 def main():
     rclpy.init(args=None)
