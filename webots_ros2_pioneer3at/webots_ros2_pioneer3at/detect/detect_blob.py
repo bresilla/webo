@@ -36,9 +36,10 @@ class ImageSubscriber(Node):
         # print(gps.latitude)
         # print(gps.longitude)
         image = self.bridge.imgmsg_to_cv2(img)
-        image, tags = self.blober(image)
+        image, tags = self.blober(image, img.header.stamp)
         self.tags_front.publish(tags)
         labeled_frame = self.bridge.cv2_to_imgmsg(image, encoding='bgr8')
+        labeled_frame.header.stamp = img.header.stamp
         self.image_front_pub.publish(labeled_frame)
 
     def camera_back(self, img, gps):
@@ -46,16 +47,19 @@ class ImageSubscriber(Node):
         # print(gps.longitude)
         image = self.bridge.imgmsg_to_cv2(img)
         image = cv2.flip(image, 1)
-        image, tags = self.blober(image)
+        image, tags = self.blober(image, img.header.stamp)
         self.tags_back.publish(tags)
         labeled_frame = self.bridge.cv2_to_imgmsg(image, encoding='bgr8')
+        labeled_frame.header.stamp = img.header.stamp
         self.image_back_pub.publish(labeled_frame)
 
-    def blober(self, img):
+    def blober(self, img, img_header_stamp):
         img = cv2.GaussianBlur(img, (9, 9), 0)
         hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         bound_lower = np.array([50, 70, 0])
         bound_upper = np.array([120, 255, 127])
+        # bound_lower = np.array([30, 30, 0])
+        # bound_upper = np.array([100, 160, 255 ])
 
         mask_green = cv2.inRange(hsv_img, bound_lower, bound_upper)
 
@@ -86,7 +90,7 @@ class ImageSubscriber(Node):
                 xc = int(moments["m10"] / moments["m00"])
                 yc = int(moments["m01"] / moments["m00"])
                 cv2.circle(seg_img, (xc, yc), 5, (0, 255, 0), -1)
-        tags.header.stamp = self.get_clock().now().to_msg()
+        tags.header.stamp = img_header_stamp
         tags.header.frame_id = "tags"
 
         output = cv2.drawContours(seg_img, large_contours, -1, (0, 0, 255), 3)

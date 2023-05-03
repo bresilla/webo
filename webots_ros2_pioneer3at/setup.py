@@ -3,12 +3,6 @@ from setuptools import setup
 import os
 
 package_name = 'webots_ros2_pioneer3at'
-canbus = "webots_ros2_pioneer3at/canbus"
-path_server = "webots_ros2_pioneer3at/path_server"
-weeding = "webots_ros2_pioneer3at/weeding"
-utils = "webots_ros2_pioneer3at/utils"
-
-
 data_files = []
 #resources
 data_files.append(('share/ament_index/resource_index/packages', ['resource/' + package_name]))
@@ -29,7 +23,15 @@ data_files.append(('share/' + package_name + '/maps', glob('maps/*')))
 setup(
     name=package_name,
     version='0.0.0',
-    packages=[package_name, canbus, path_server, weeding],
+    packages=[
+        package_name,
+        "webots_ros2_pioneer3at/canbus",
+        "webots_ros2_pioneer3at/path_server",
+        "webots_ros2_pioneer3at/weeding",
+        "webots_ros2_pioneer3at/utils",
+        "webots_ros2_pioneer3at/detect",
+        "webots_ros2_pioneer3at/track",
+    ],
     data_files=data_files,
     install_requires=['setuptools'],
     zip_safe=True,
@@ -44,13 +46,22 @@ setup(
             'topic_remapper = webots_ros2_pioneer3at.topic_remapper:main',
             'navfix_can = webots_ros2_pioneer3at.canbus.navfix_can:main',
             'pathserver_utm = webots_ros2_pioneer3at.path_server.utm:main',
-            'save_images = webots_ros2_pioneer3at.utils.save_images:main',
-            'detect_pixel = webots_ros2_pioneer3at.weeding.detect_pixel:main',
-            'detect_blob = webots_ros2_pioneer3at.weeding.detect_blob:main',
-            'detect_yolo = webots_ros2_pioneer3at.weeding.detect_yolo:main',
-            'tracking = webots_ros2_pioneer3at.weeding.nofair_tracking:main',
-            'nofair_tracking_blob = webots_ros2_pioneer3at.weeding.nofair_tracking_blob:main',
 
+            'save_images = webots_ros2_pioneer3at.utils.save_images:main',
+            'image_player = webots_ros2_pioneer3at.utils.image_player:main',
+
+            'detect_pixel = webots_ros2_pioneer3at.detect.detect_pixel:main',
+            'detect_blob = webots_ros2_pioneer3at.detect.detect_blob:main',
+            'detect_yolo = webots_ros2_pioneer3at.detect.detect_yolo:main',
+
+            'track_nofair = webots_ros2_pioneer3at.track.track_nofair:main',
+            'track_deepsort = webots_ros2_pioneer3at.track.track_deepsort:main',
+            'track_nofair_old = webots_ros2_pioneer3at.track.track_nofair_old:main',
+
+            'detract_blob = webots_ros2_pioneer3at.weeding.detract_blob:main',
+            'detract_yolo = webots_ros2_pioneer3at.weeding.detract_yolo:main',
+            'detract_blob_all = webots_ros2_pioneer3at.weeding.detract_blob_all:main',
+            'detract_yolo_all = webots_ros2_pioneer3at.weeding.detract_yolo_all:main',
         ],
         'launch.frontend.launch_extension': [
             'launch_ros = launch_ros'

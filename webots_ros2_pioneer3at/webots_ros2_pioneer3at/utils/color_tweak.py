@@ -19,7 +19,9 @@ def getBlobPositionInImage(color, lower_boud, upper_bound):
             y = int(moments["m01"] / moments["m00"])
     return color
 
-path = "/home/bresilla/webots/webo/images/front_camera_504.png"
+# path = "/doc/DATA/R4C/data/Cam/20230223143203/RGB-18443010C1A2DF0F00/1677159164.145706.jpg"
+path = "/doc/DATA/R4C/data/Cam/20230223143203/RGB-18443010B1F4DE0F00/1677159164.145706.jpg"
+
 img = cv2.imread(path)
 # hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 # bound_lower = np.array([28, 17, 20])
@@ -50,13 +52,13 @@ def nothing(x):
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
 # Create window
-cv2.namedWindow("Result")
+cv2.namedWindow('Result', cv2.WINDOW_NORMAL)
 
 # Create sliders for lower and upper bounds of the blue color
-cv2.createTrackbar("Lower H", "Result", 0, 179, nothing)
-cv2.createTrackbar("Lower S", "Result", 0, 255, nothing)
+cv2.createTrackbar("Lower H", "Result", 0, 255, nothing)
+cv2.createTrackbar("Lower S", "Result", 30, 255, nothing)
 cv2.createTrackbar("Lower V", "Result", 0, 255, nothing)
-cv2.createTrackbar("Upper H", "Result", 179, 179, nothing)
+cv2.createTrackbar("Upper H", "Result", 64, 255, nothing)
 cv2.createTrackbar("Upper S", "Result", 255, 255, nothing)
 cv2.createTrackbar("Upper V", "Result", 255, 255, nothing)
 
