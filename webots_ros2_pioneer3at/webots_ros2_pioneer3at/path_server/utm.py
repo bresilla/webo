@@ -60,6 +60,7 @@ class GoToPosition(Node):
     def cancel_callback(self, goal):
         self.get_logger().info('Received cancel request')
         return CancelResponse.ACCEPT
+        # Shutdown after receiving a result
 
     def handle_accepted_callback(self, goal_handle):
         with self._goal_lock:

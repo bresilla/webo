@@ -1,16 +1,13 @@
-from typing import List
+from deepsort.tracker import Tracker as DeepSortTracker
+import deepsort.generate_detections as gdet
+from deepsort import nn_matching
+from deepsort.detection import Detection
+
 import numpy as np
-
-import torch
-import torchvision.ops.boxes as bops
-
-import norfair
-from norfair import Detection, Tracker, Paths
 from supervision.detection.line_counter import LineZone, LineZoneAnnotator
 from supervision.detection.core import Detections
 from supervision.geometry.core import Point
 from example_interfaces.srv import Trigger
-
 
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
@@ -20,6 +17,8 @@ from cv_bridge import CvBridge
 import message_filters
 from handy_msgs.msg import Tag, Tags, Float32Stamped
 import cv2
+import random
+
 
 def place_text_with_background(frame, text, position, background_color=(255, 255, 255), text_color=(0, 0, 0), font_scale=0.8, font_thickness=2, padding=6):
     text_size, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)
@@ -28,73 +27,70 @@ def place_text_with_background(frame, text, position, background_color=(255, 255
     cv2.rectangle(frame, (text_x - padding, text_y - padding*2), (text_x + text_w + padding, text_y + text_h + padding*2), background_color, cv2.FILLED)
     cv2.putText(frame, text, (text_x, text_y + text_h), cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, font_thickness)
 
-class Trackit(Tracker):
-    def __init__(self, trackt):
-        super().__init__(
-            distance_function=self.iou if trackt == "bbox" else self.euclidean_distance,
-            distance_threshold=3.33 if trackt == "bbox" else 30,
-            initialization_delay=10,
-            )
-        self.track_form = trackt
-        self.pather = Paths(thickness=2, attenuation=0.1)
+class Trackit:
+    tracker = None
+    encoder = None
+    tracks = None
 
-    def iou(self, detection, tracked_object):
-        box_a = np.concatenate([detection.points[0], detection.points[1]])
-        box_b = np.concatenate([tracked_object.estimate[0], tracked_object.estimate[1]])
-        x_a = max(box_a[0], box_b[0])
-        y_a = max(box_a[1], box_b[1])
-        x_b = min(box_a[2], box_b[2])
-        y_b = min(box_a[3], box_b[3])
-        inter_area = max(0, x_b - x_a + 1) * max(0, y_b - y_a + 1)
-        box_a_area = (box_a[2] - box_a[0] + 1) * (box_a[3] - box_a[1] + 1)
-        box_b_area = (box_b[2] - box_b[0] + 1) * (box_b[3] - box_b[1] + 1)
-        iou = inter_area / float(box_a_area + box_b_area - inter_area)
-        return 1 / iou if iou else 10
+    def __init__(self):
+        max_cosine_distance = 0.4
+        nn_budget = None
+        encoder_model_filename = '/home/bresilla/webots/webo/mars-small128.pb'
+        metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
+        self.tracker = DeepSortTracker(metric)
+        self.encoder = gdet.create_box_encoder(encoder_model_filename, batch_size=1)
+
+    def update(self, frame, detections):
+        bboxes = np.asarray([d[:-1] for d in detections])
+        bboxes[:, 2:] = bboxes[:, 2:] - bboxes[:, 0:2]
+        scores = [d[-1] for d in detections]
+        features = self.encoder(frame, bboxes)
+        dets = []
+        for bbox_id, bbox in enumerate(bboxes):
+            dets.append(Detection(bbox, scores[bbox_id], features[bbox_id]))
+        self.tracker.predict()
+        self.tracker.update(dets)
+        self.update_tracks()
+
+    def update_tracks(self):
+        tracks = []
+        for track in self.tracker.tracks:
+            if not track.is_confirmed() or track.time_since_update > 1:
+                continue
+            bbox = track.to_tlbr()
+            id = track.track_id
+            tracks.append(Track(id, bbox))
+        self.tracks = tracks
+
+    def gen_detections(self, tags):
+        detections = []
+        for tag in tags.data:
+            detections.append([tag.x, tag.y, tag.x+tag.w, tag.y+tag.h, tag.p])
+        return detections
     
-    def iou_pytorch(self, detection, tracked_object):
-        detection_points = np.concatenate([detection.points[0], detection.points[1]])
-        tracked_object_points = np.concatenate([tracked_object.estimate[0], tracked_object.estimate[1]])
-        box_a = torch.tensor([detection_points]) 
-        box_b = torch.tensor([tracked_object_points])
-        iou = bops.box_iou(box_a, box_b)
-        floater = float(1 / iou if iou else 10000)
-        return floater
-    
-    def euclidean_distance(self, detection, tracked_object):
-        return np.linalg.norm(detection.points - tracked_object.estimate)
+    def draw_tracks(self, frame):
+        for track in self.tracks:
+            bbox = track.bbox.astype(np.int)
+            x1, y1, x2, y2 = bbox
+            track_id = track.track_id
+            cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), colors[track_id % 10], 2)
+            place_text_with_background(frame, str(track_id), (int(x1), int(y1)), colors[track_id % 10])
+colors = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for j in range(10)]
 
-    def gen_detections(self, tags) -> List[Detection]:
-        norfair_detections: List[Detection] = []
-        for detection in tags.data:
-            if self.track_form == "centroid":
-                points = np.array([
-                    detection.x,
-                    detection.y
-                ])
-                scores = np.array([detection.p])
-            elif self.track_form == "bbox":
-                points = np.array([
-                    [detection.x, detection.y],
-                    [detection.x + detection.w, detection.y + detection.h]
-                ])
-                scores = np.array([detection.p, detection.p])
-            norfair_detections.append(Detection(points=points, scores=scores))
-        return norfair_detections
+class Track:
+    track_id = None
+    bbox = None
 
-    def draw_tracks(self, frame, tracked_objects):
-        if self.track_form == "centroid":
-            norfair.draw_points(frame, drawables=tracked_objects, draw_ids=True, text_size=1.5)
-        elif self.track_form == "bbox":
-            norfair.draw_boxes(frame, drawables=tracked_objects, draw_ids=True, text_size=1.5)
-        return frame, tracked_objects
-
+    def __init__(self, id, bbox):
+        self.track_id = id
+        self.bbox = bbox
 
 class Tracktor(Node):
     def __init__(self, name, img_sub_name, tag_sub_name, pub_name):
         super().__init__(name)
         self.bridge = CvBridge()
         self.bgr = (0, 255, 0)
-        self.trackit = Trackit("bbox")
+        self.trackit = Trackit()
         self.offset = 1.1
         self.dimensions = None
         self.annotator = LineZoneAnnotator(thickness=2, text_thickness=2, text_scale=0.8)
@@ -113,21 +109,24 @@ class Tracktor(Node):
 
 
     def callback(self, image, tags, distance):
-        frame = self.bridge.imgmsg_to_cv2(image, "bgr8") 
+        frame = self.bridge.imgmsg_to_cv2(image, "bgr8")
         self.dimensions = frame.shape if self.dimensions is None else self.dimensions
         detections = self.trackit.gen_detections(tags)
-        tracked_objects = self.trackit.update(detections=detections)
-        frame2 = self.trackit.pather.draw(frame, tracked_objects)
-        frame = cv2.add(frame, frame2)
-        self.trackit.draw_tracks(frame, tracked_objects)
+        tracked_objects = self.trackit.update(frame, detections)
         if self.counter is None: 
             self.counter = LineZone(Point(20, int(self.dimensions[0]/2)), Point(self.dimensions[1]-20, int(self.dimensions[0]/2)))
         else:
             xyxy = np.empty((0,4))
             tracker_id = np.empty((0,))
-            for obj in tracked_objects:
-                xyxy = np.append(xyxy, [obj.estimate.flatten()], axis=0)
-                tracker_id = np.append(tracker_id, [obj.id], axis=0)
+            for track in self.trackit.tracks:
+                bbox = track.bbox.astype(np.int)
+                xyxy = np.append(xyxy, [bbox], axis=0)
+                track_id = track.track_id
+                tracker_id = np.append(tracker_id, [track_id], axis=0)
+                x1, y1, x2, y2 = bbox
+                cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), colors[track_id % 10], 2)
+                place_text_with_background(frame, str(track_id), (int(x1), int(y1)), colors[track_id % 10])
+            # self.trackit.draw_tracks(frame)
             detections = Detections(xyxy=xyxy, tracker_id=tracker_id)
             self.counter.trigger(detections)
             self.detections = abs(self.counter.in_count-self.counter.out_count)

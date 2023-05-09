@@ -37,7 +37,7 @@ class ImageSubscriber(Node):
     def camera_front(self, img, dist):
         global camera_front
         image = self.cv_bridge.imgmsg_to_cv2(img)
-        image, num_white_pixels = self.counter(image, False, "CAM_FRONT")
+        image, num_white_pixels = self.counter(image, True, "CAM_FRONT")
         self.pixels_front.append((dist.data, num_white_pixels))
         msg = Int32()
         msg.data = 0
@@ -45,7 +45,6 @@ class ImageSubscriber(Node):
             for e in self.pixels_front:
                 if approximately_equal(e[0]+self.offset, dist.data, 0.05): break
                 self.pixels_front.pop(0)[1]
-                print("here")
             pixels_after = self.pixels_front.pop(0)[1]
             msg.data = pixels_after
         self.pixels_front_pub.publish(msg)
@@ -54,7 +53,7 @@ class ImageSubscriber(Node):
         global camera_back
         image = self.cv_bridge.imgmsg_to_cv2(img)
         image = cv2.flip(image, 1)
-        image, num_white_pixels = self.counter(image, False, "CAM_BACK")
+        image, num_white_pixels = self.counter(image, True, "CAM_BACK")
         self.pixels_back.append((dist.data, num_white_pixels))
         msg = Int32()
         msg.data = 0

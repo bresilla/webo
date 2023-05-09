@@ -46,6 +46,8 @@ setup(
             'topic_remapper = webots_ros2_pioneer3at.topic_remapper:main',
             'navfix_can = webots_ros2_pioneer3at.canbus.navfix_can:main',
             'pathserver_utm = webots_ros2_pioneer3at.path_server.utm:main',
+            'instruct = webots_ros2_pioneer3at.path_server.instruct:main',
+
 
             'save_images = webots_ros2_pioneer3at.utils.save_images:main',
             'image_player = webots_ros2_pioneer3at.utils.image_player:main',
@@ -57,6 +59,7 @@ setup(
             'track_nofair = webots_ros2_pioneer3at.track.track_nofair:main',
             'track_deepsort = webots_ros2_pioneer3at.track.track_deepsort:main',
             'track_nofair_old = webots_ros2_pioneer3at.track.track_nofair_old:main',
+            'track_deepsort_old = webots_ros2_pioneer3at.track.track_deepsort_old:main',
 
             'detract_blob = webots_ros2_pioneer3at.weeding.detract_blob:main',
             'detract_yolo = webots_ros2_pioneer3at.weeding.detract_yolo:main',
