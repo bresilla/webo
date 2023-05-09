@@ -9,36 +9,38 @@ from rclpy.executors import MultiThreadedExecutor
 import math
 import message_filters
 import threading
+import queue
 import numpy as np
 import webots_ros2_pioneer3at.path_server.utils as utils
 
 from handy_msgs.action import Nav
 
-pose = Pose()
-fix = NavSatFix()
+
 import rclpy
 from sensor_msgs.msg import NavSatFix
 
 class GetThePosition(Node):
-    def __init__(self):
+    def __init__(self, queue):
         super().__init__('get_the_position')
         self.pub_ = self.create_publisher(Pose, '/pose/local', 10)
         self.pose_sub = message_filters.Subscriber(self, Odometry, '/odometry/global')
         self.fix_sub = message_filters.Subscriber(self, NavSatFix, '/gps')
         self.pose_sub = message_filters.ApproximateTimeSynchronizer([self.pose_sub, self.fix_sub], 10, slop=10)
         self.pose_sub.registerCallback(self.pose_callback)
+        self.queue = queue
+        self.pose = Pose()
+        self.fix = NavSatFix()
 
     def pose_callback(self, pose_sub, fix_sub):
-        global pose
-        global fix
-        pose.position = pose_sub.pose.pose.position
-        pose.orientation = pose_sub.pose.pose.orientation
-        fix = fix_sub
-        self.pub_.publish(pose)
+        self.pose.position = pose_sub.pose.pose.position
+        self.pose.orientation = pose_sub.pose.pose.orientation
+        self.fix = fix_sub
+        self.pub_.publish(self.pose)
+        self.queue.put((self.pose, self.fix))
 
 
 class GoToPosition(Node):
-    def __init__(self):
+    def __init__(self, queue):
         super().__init__('go_to_position')
         self.publisher_ = self.create_publisher(Twist, '/cmd_vel', 10)
         self.current_pose_ = Point()
@@ -46,6 +48,7 @@ class GoToPosition(Node):
         self.current_orientation_ = Quaternion()
         self._goal_handle = None
         self._goal_lock = threading.Lock()
+        self.queue = queue
 
         self._action_server = ActionServer(self, Nav, '/navigation', 
             execute_callback=self.execute_callback,
@@ -71,41 +74,46 @@ class GoToPosition(Node):
         goal_handle.execute()
      
     async def execute_callback(self, goal_handle):
-        global pose
-        global fix
-        self.get_logger().info('Executing goal...')
-        feedback_msg = Nav.Feedback()
-        points = goal_handle.request.initial_path.poses
-        new_points = []
-        for i in points:
-            new_points.append((i.pose.position.x, i.pose.position.y))
-        print(utils.local_to_gps_array((fix.latitude, fix.longitude), new_points))
-        for e, i in enumerate(points):
-            target = i.pose.position
-            self.target_pose_ = target
-            print(f"going to: {i}")
-            feedback_msg.wp_reached = e
-            while True:
-                if goal_handle.is_cancel_requested:
-                    self.stop_moving()
-                    return Nav.Result()
-                if not goal_handle.is_active:
-                    self.stop_moving()
-                    return Nav.Result()
-                self.current_pose_ = pose.position
-                self.current_orientation_ = pose.orientation
-                twist = Twist()
-                distance, twist.linear.x, twist.angular.z  = self.get_nav_params()
-                self.publisher_.publish(twist)
-                feedback_msg.longitude = fix.longitude
-                feedback_msg.latitude = fix.latitude
-                goal_handle.publish_feedback(feedback_msg)
-                if distance < 0.5: 
-                    break
-        self.stop_moving()
-        goal_handle.succeed()
-        result = Nav.Result()
-        return result
+        while True:
+            try:
+                data = self.queue.get(timeout=0.1)
+                pose, fix = data
+                self.get_logger().info('Executing goal...')
+                feedback_msg = Nav.Feedback()
+                points = goal_handle.request.initial_path.poses
+                new_points = []
+                for i in points:
+                    new_points.append((i.pose.position.x, i.pose.position.y))
+                print(utils.local_to_gps_array((fix.latitude, fix.longitude), new_points))
+                for e, i in enumerate(points):
+                    target = i.pose.position
+                    self.target_pose_ = target
+                    print(f"going to: {i}")
+                    feedback_msg.wp_reached = e
+                    while True:
+                        if goal_handle.is_cancel_requested:
+                            self.stop_moving()
+                            return Nav.Result()
+                        if not goal_handle.is_active:
+                            self.stop_moving()
+                            return Nav.Result()
+                        self.current_pose_ = pose.position
+                        self.current_orientation_ = pose.orientation
+                        twist = Twist()
+                        distance, twist.linear.x, twist.angular.z  = self.get_nav_params()
+                        self.publisher_.publish(twist)
+                        feedback_msg.longitude = fix.longitude
+                        feedback_msg.latitude = fix.latitude
+                        goal_handle.publish_feedback(feedback_msg)
+                        if distance < 0.5: 
+                            break
+                self.stop_moving()
+                goal_handle.succeed()
+                result = Nav.Result()
+                return result
+            except queue.Empty:
+                self.get_logger().info('Empty queue')
+                pass
 
     def stop_moving(self):
         self.get_logger().info('Stopping...')
@@ -149,9 +157,10 @@ class GoToPosition(Node):
 
 def main(args=None):
     rclpy.init(args=args)
+    thequeue = queue.Queue()
     try:
-        getpos=GetThePosition()
-        gotopos = GoToPosition()
+        getpos=GetThePosition(thequeue)
+        gotopos = GoToPosition(thequeue)
         gotopos.log_file = False
         executor = MultiThreadedExecutor(num_threads=2)
         executor.add_node(getpos)

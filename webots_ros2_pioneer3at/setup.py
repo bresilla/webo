@@ -46,6 +46,8 @@ setup(
             'topic_remapper = webots_ros2_pioneer3at.topic_remapper:main',
             'navfix_can = webots_ros2_pioneer3at.canbus.navfix_can:main',
             'pathserver_utm = webots_ros2_pioneer3at.path_server.utm:main',
+            'pathserver_utm2 = webots_ros2_pioneer3at.path_server.utm2:main',
+
             'instruct = webots_ros2_pioneer3at.path_server.instruct:main',
 
 

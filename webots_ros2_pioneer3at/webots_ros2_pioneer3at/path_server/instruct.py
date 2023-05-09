@@ -13,6 +13,7 @@ class MinimalActionClient(Node):
     def __init__(self):
         super().__init__('nav_instructor')
         self._action_client = ActionClient(self, Nav, '/navigation')
+        self.at_point = None
 
 
     def goal_response_callback(self, future):
@@ -25,7 +26,11 @@ class MinimalActionClient(Node):
         self._get_result_future.add_done_callback(self.get_result_callback)
 
     def feedback_callback(self, feedback):
-        self.get_logger().info('Received feedback: {0}'.format(feedback.feedback.wp_reached))
+        self.at_point = feedback.feedback.wp_reached if self.at_point is None else self.at_point
+        if feedback.feedback.wp_reached != self.at_point:
+            self.at_point = feedback.feedback.wp_reached
+            self.get_logger().info(f'Point >> {feedback.feedback.wp_reached} << reached')
+        # self.get_logger().info(f'Latitude: {feedback.feedback.latitude}, Longitude: {feedback.feedback.longitude}')
 
     def get_result_callback(self, future):
         result = future.result().result
