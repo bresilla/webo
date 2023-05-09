@@ -30,7 +30,7 @@ class MinimalActionClient(Node):
         if feedback.feedback.wp_reached != self.at_point:
             self.at_point = feedback.feedback.wp_reached
             self.get_logger().info(f'Point >> {feedback.feedback.wp_reached} << reached')
-        # self.get_logger().info(f'Latitude: {feedback.feedback.latitude}, Longitude: {feedback.feedback.longitude}')
+        self.get_logger().info(f'Latitude: {feedback.feedback.latitude}, Longitude: {feedback.feedback.longitude}')
 
     def get_result_callback(self, future):
         result = future.result().result

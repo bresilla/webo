@@ -13,10 +13,8 @@ import queue
 import numpy as np
 import webots_ros2_pioneer3at.path_server.utils as utils
 
-from handy_msgs.action import Nav
-
-
 import rclpy
+from handy_msgs.action import Nav
 from sensor_msgs.msg import NavSatFix
 
 class GetThePosition(Node):
@@ -72,8 +70,48 @@ class GoToPosition(Node):
                 self._goal_handle.abort()
             self._goal_handle = goal_handle
         goal_handle.execute()
-     
+
     async def execute_callback(self, goal_handle):
+        self.get_logger().info('Executing goal...')
+        feedback_msg = Nav.Feedback()
+        points = goal_handle.request.initial_path.poses
+        new_points = []
+        for i in points:
+            new_points.append((i.pose.position.x, i.pose.position.y))
+        for e, i in enumerate(points):
+            target = i.pose.position
+            self.target_pose_ = target
+            print(f"going to: {i}")
+            feedback_msg.wp_reached = e
+            while True:
+                try:
+                    data = self.queue.get(timeout=0.1)
+                    pose, fix = data
+                    if goal_handle.is_cancel_requested:
+                        self.stop_moving()
+                        return Nav.Result()
+                    if not goal_handle.is_active:
+                        self.stop_moving()
+                        return Nav.Result()
+                    self.current_pose_ = pose.position
+                    self.current_orientation_ = pose.orientation
+                    twist = Twist()
+                    distance, twist.linear.x, twist.angular.z  = self.get_nav_params()
+                    self.publisher_.publish(twist)
+                    feedback_msg.longitude = fix.longitude
+                    feedback_msg.latitude = fix.latitude
+                    goal_handle.publish_feedback(feedback_msg)
+                    if distance < 0.2: 
+                        break
+                except queue.Empty:
+                    self.get_logger().info('Empty queue')
+                    pass
+        self.stop_moving()
+        goal_handle.succeed()
+        result = Nav.Result()
+        return result
+     
+    async def execute_callback2(self, goal_handle):
         while True:
             try:
                 data = self.queue.get(timeout=0.1)
